@@ -5,13 +5,13 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 3; // Salud máxima
-    private int currentHealth; // Salud actual
+    public int maxHealth = 3;
+    private int currentHealth;
 
-    public Image[] hearts; // Array de imágenes de corazones
-    public Animator animator; // Referencia al Animator
-    public GameObject missionFailedCanvas; // Referencia al Canvas de "Mission Failed"
-    private SpriteRenderer _renderer; // Para efectos visuales
+    public Image[] hearts;
+    public Animator animator;
+    public GameObject missionFailedCanvas;
+    private SpriteRenderer _renderer;
 
     private void Awake()
     {
@@ -27,17 +27,17 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        // Visual Feedback
+
         StartCoroutine(VisualFeedback());
 
-        // Verificar si el jugador murió
+
         if (currentHealth <= 0)
         {
             currentHealth = 0;
             Die();
         }
 
-        // Actualizar UI
+
         UpdateHealthUI();
         Debug.Log("Jugador recibe daño. Salud actual: " + currentHealth);
     }
@@ -46,13 +46,13 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.Log("Jugador ha muerto");
 
-        // Activar la animación de muerte
+        
         animator.SetTrigger("Die");
 
-        // Desactivar controles del jugador (si tienes un script de movimiento, desactívalo)
+        
         GetComponent<PlayerController>().enabled = false;
 
-        // Mostrar el MissionFailedCanvas después de la animación
+        
         StartCoroutine(ShowMissionFailedCanvas());
     }
 
@@ -75,27 +75,27 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth += amount;
 
-        // Limitar salud al máximo
+        
         if (currentHealth > maxHealth)
             currentHealth = maxHealth;
 
-        // Actualizar UI
+        
         UpdateHealthUI();
         Debug.Log("Jugador recupera salud. Salud actual: " + currentHealth);
     }
 
     private void UpdateHealthUI()
     {
-        // Activar o desactivar corazones según la salud actual
+        
         for (int i = 0; i < hearts.Length; i++)
         {
             if (i < currentHealth)
             {
-                hearts[i].enabled = true; // Mostrar corazón
+                hearts[i].enabled = true; 
             }
             else
             {
-                hearts[i].enabled = false; // Ocultar corazón
+                hearts[i].enabled = false; 
             }
         }
     }
