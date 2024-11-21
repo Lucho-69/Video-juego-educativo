@@ -73,7 +73,7 @@ public class Prueba : MonoBehaviour
         {
             isPlayerNearby = true;
             mensajeCanvas.gameObject.SetActive(true); 
-            messageText.text = "Presiona 'E' para interactuar";
+            messageText.text = "";
         }
     }
 

@@ -26,6 +26,7 @@ public class Interaction : MonoBehaviour
     private Vector3 initialPosition;
     private bool _facingRight = true;
     private bool _isPatrolling = true;
+    private bool _isTurningAround = false;  
 
     private void Start()
     {
@@ -70,16 +71,22 @@ public class Interaction : MonoBehaviour
 
         float distanceFromStart = Vector2.Distance(initialPosition, transform.position);
 
-        // Cambiar dirección al alcanzar el límite de patrullaje
-        if (distanceFromStart >= patrolRange)
+        // Evitar que el NPC cambie de dirección repetidamente
+        if (distanceFromStart >= patrolRange && !_isTurningAround)
         {
             Flip();
+            _isTurningAround = true; 
+        }
+
+        if (distanceFromStart < patrolRange)
+        {
+            _isTurningAround = false; 
         }
 
         float patrolDirection = _facingRight ? 1 : -1;
         _rigidbody.velocity = new Vector2(patrolDirection * patrolSpeed, _rigidbody.velocity.y);
 
-        // Cambiar a animación de "Run" solo si está patrullando
+        
         _animator.SetBool("Run", true);
     }
 
@@ -168,14 +175,18 @@ public class Interaction : MonoBehaviour
     private void FacePlayer()
     {
         Vector3 direction = playerTransform.position - transform.position;
-        transform.localScale = new Vector3(Mathf.Sign(direction.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+
+        if ((_facingRight && direction.x < 0) || (!_facingRight && direction.x > 0))
+        {
+            Flip(); // Cambiar la dirección del NPC solo si es necesario
+        }
     }
 
     private void Flip()
     {
-        _facingRight = !_facingRight;
+        _facingRight = !_facingRight;  // Cambiar el estado de la dirección
         Vector3 localScale = transform.localScale;
-        localScale.x *= -1;
+        localScale.x *= -1; 
         transform.localScale = localScale;
     }
 
