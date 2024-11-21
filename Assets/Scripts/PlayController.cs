@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float longIdleTime = 5f;
     public float speed = 2.5f;
     public float jumpForce = 2.5f;
 
@@ -16,16 +15,13 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rigidbody;
     private Animator _animator;
 
-    // Long Idle
-    private float _longIdleTimer;
-
     // Movement
     private Vector2 _movement;
     private bool _facingRight = true;
     private bool _isGround;
 
     // Attack
-    private bool _isBloking;
+    private bool _isAttack;
 
 
     void Awake()
@@ -41,7 +37,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (_isBloking == false)
+        if (_isAttack == false)
         {
             // Movement
             float horizontalInput = Input.GetAxisRaw("Horizontal");
@@ -62,13 +58,13 @@ public class PlayerController : MonoBehaviour
         _isGround = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
         // Is Jumping?
-        if (Input.GetButtonDown("Jump") && _isGround == true && _isBloking == false)
+        if (Input.GetButtonDown("Jump") && _isGround == true && _isAttack == false)
         {
             _rigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
 
         // Wanna Attack?
-        if (Input.GetButtonDown("Fire1") && _isGround == true && _isBloking == false)
+        if (Input.GetButtonDown("Fire1") && _isGround == true && _isAttack == false)
         {
             _movement = Vector2.zero;
             _rigidbody.velocity = Vector2.zero;
@@ -78,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (_isBloking == false)
+        if (_isAttack == false)
         {
             float horizontalVelocity = _movement.normalized.x * speed;
             _rigidbody.velocity = new Vector2(horizontalVelocity, _rigidbody.velocity.y);
@@ -94,27 +90,13 @@ public class PlayerController : MonoBehaviour
         // Animator
         if (_animator.GetCurrentAnimatorStateInfo(0).IsTag("Block"))
         {
-            _isBloking = true;
+            _isAttack = true;
         }
         else
         {
-            _isBloking = false;
+            _isAttack = false;
         }
 
-        // Long Idle
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsTag("idle"))
-        {
-            _longIdleTimer += Time.deltaTime;
-
-            if (_longIdleTimer >= longIdleTime)
-            {
-                _animator.SetTrigger("Londle");
-            }
-        }
-        else
-        {
-            _longIdleTimer = 0f;
-        }
     }
 
     private void Flip()
