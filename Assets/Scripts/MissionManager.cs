@@ -6,13 +6,14 @@ using UnityEngine;
 public class MissionManager : MonoBehaviour
 {
     private GameManager gameManager;
-    public Transform targetNPC;               
-    public Transform cameraTarget;            
-    public GameObject interactSymbol;         
-    public TextMeshProUGUI timerText;         
+    public Transform targetNPC;
+    public Transform cameraTarget;
+    public GameObject interactSymbol;
+    public GameObject missionPanel; // Referencia al panel de misión
+    public TextMeshProUGUI timerText;
     public TextMeshProUGUI missionDescription;
     public float cameraMoveSpeed = 2f;
-    public float missionTime = 30f;           
+    public float missionTime = 30f;
 
     private bool missionStarted = false;
     private bool timerRunning = false;
@@ -21,12 +22,15 @@ public class MissionManager : MonoBehaviour
     private void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
+
+        // Desactivamos la UI al inicio
+        missionPanel.SetActive(false); // Asegúrate de que el MissionPanel esté desactivado al principio
         missionDescription.gameObject.SetActive(false);
         timerText.gameObject.SetActive(false);
         interactSymbol.SetActive(false);
     }
 
-    
+
     public void StartMission()
     {
         if (!missionStarted)
@@ -35,13 +39,16 @@ public class MissionManager : MonoBehaviour
             timeRemaining = missionTime;
             timerRunning = true;
 
-            
+            // Activamos el MissionPanel al iniciar la misión
+            missionPanel.SetActive(true); // Hacemos visible el panel de misión
+
             missionDescription.text = "Mission: Avisa a las Heroinas antes de que acabe el tiempo";
-            missionDescription.gameObject.SetActive(true);
-            timerText.gameObject.SetActive(true);
+            missionDescription.gameObject.SetActive(true); // Aseguramos que la descripción de la misión se vea
+            timerText.gameObject.SetActive(true); // Aseguramos que el temporizador sea visible
+
             UpdateTimerUI();
 
-            
+            // Mover la cámara hacia el objetivo de la misión
             StartCoroutine(MoveCameraToTarget());
         }
     }
@@ -58,12 +65,13 @@ public class MissionManager : MonoBehaviour
             yield return null;
         }
 
+        // Una vez que la cámara se mueve al objetivo, mostramos el símbolo de interacción
         interactSymbol.SetActive(true);
     }
 
     private void Update()
     {
-        
+
         if (timerRunning)
         {
             if (timeRemaining > 0)
@@ -88,23 +96,32 @@ public class MissionManager : MonoBehaviour
     {
         if (collision.CompareTag("Player") && missionStarted)
         {
-            
+            // Si el jugador completa la misión, detener el temporizador
             timerRunning = false;
-            interactSymbol.SetActive(false); 
+            interactSymbol.SetActive(false);
+
+            // Cambiar el texto a "Misión Completada!"
             timerText.text = "¡Misión Completada!";
             missionDescription.text = "";
 
-            
+
             StartCoroutine(HideMissionUI());
 
-            
+
         }
     }
 
     private IEnumerator HideMissionUI()
     {
+        // Esperar 2 segundos antes de ocultar la UI
         yield return new WaitForSeconds(2f);
-        timerText.gameObject.SetActive(false);
+
+        // Desactivar el MissionPanel
+        missionPanel.SetActive(false); // Ocultamos todo el panel de la misión
+
+        // También puedes desactivar los elementos individuales si es necesario
         missionDescription.gameObject.SetActive(false);
+        timerText.gameObject.SetActive(false);
+
     }
 }

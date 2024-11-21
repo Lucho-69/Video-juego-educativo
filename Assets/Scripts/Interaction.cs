@@ -30,6 +30,10 @@ public class Interaction : MonoBehaviour
     private bool _isTurningAround = false;
     private int currentMessageIndex = 0; // Índice del mensaje actual
 
+    public bool startsMission = false;
+    public string missionId; // Identificador opcional para la misión (por si hay más de una)
+    private MissionManager missionManager; // Referencia al MissionManager
+
     private void Start()
     {
         interactSymbol = GameObject.Find("InteractSymbol").GetComponent<TextMeshProUGUI>();
@@ -41,6 +45,8 @@ public class Interaction : MonoBehaviour
         dialogPanel.SetActive(false);
 
         InvokeRepeating(nameof(DetectPlayer), 0, 0.5f);
+
+        missionManager = FindObjectOfType<MissionManager>();
     }
 
     private void Update()
@@ -182,6 +188,12 @@ public class Interaction : MonoBehaviour
             else
             {
                 EndDialogue();
+
+                // Nuevo: Iniciar la misión si este NPC está marcado
+                if (startsMission && missionManager != null)
+                {
+                    missionManager.StartMission();
+                }
             }
         }
     }
