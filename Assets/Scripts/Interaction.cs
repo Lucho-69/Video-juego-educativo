@@ -7,16 +7,17 @@ using UnityEngine.UI;
 
 public class Interaction : MonoBehaviour
 {
-    public string message = "";
+    public string[] messages; // Lista de mensajes para los diálogos
     public float typingSpeed = 0.05f;
     public KeyCode interactKey = KeyCode.E;
     public float detectionRange = 3f;
     public float patrolSpeed = 2f;
     public float patrolRange = 5f;
-    public string missionName = "";
 
-    private TextMeshProUGUI messageText;
-    public TextMeshProUGUI interactSymbol;
+    [SerializeField] private GameObject dialogPanel; // Panel de diálogo
+    [SerializeField] private TMP_Text dialogText;    // Texto del panel de diálogo
+
+    private TextMeshProUGUI interactSymbol;
     private bool isPlayerNearby = false;
     private bool isDisplayingMessage = false;
     private Transform playerTransform;
@@ -26,23 +27,18 @@ public class Interaction : MonoBehaviour
     private Vector3 initialPosition;
     private bool _facingRight = true;
     private bool _isPatrolling = true;
-    private bool _isTurningAround = false;  
+    private bool _isTurningAround = false;
+    private int currentMessageIndex = 0; // Índice del mensaje actual
 
     private void Start()
     {
-        messageText = GameObject.Find("MessageText").GetComponent<TextMeshProUGUI>();
         interactSymbol = GameObject.Find("InteractSymbol").GetComponent<TextMeshProUGUI>();
         _animator = GetComponent<Animator>();
         _rigidbody = GetComponent<Rigidbody2D>();
 
-        if (_rigidbody == null)
-        {
-            Debug.LogWarning("Rigidbody2D no encontrado en el NPC. El movimiento de patrullaje no funcionará sin un Rigidbody2D.");
-        }
-
         initialPosition = transform.position;
-        messageText.text = "";
         interactSymbol.gameObject.SetActive(false);
+        dialogPanel.SetActive(false);
 
         InvokeRepeating(nameof(DetectPlayer), 0, 0.5f);
     }
@@ -56,12 +52,16 @@ public class Interaction : MonoBehaviour
         else if (isPlayerNearby)
         {
             FacePlayer();
-            StopMovement(); // Detener movimiento del NPC
+            StopMovement();
         }
 
         if (isPlayerNearby && Input.GetKeyDown(interactKey) && !isDisplayingMessage)
         {
-            StartCoroutine(DisplayMessage());
+            StartDialogue();
+        }
+        else if (isDisplayingMessage && Input.GetKeyDown(interactKey))
+        {
+            SkipTypingOrContinue();
         }
     }
 
@@ -71,22 +71,20 @@ public class Interaction : MonoBehaviour
 
         float distanceFromStart = Vector2.Distance(initialPosition, transform.position);
 
-        // Evitar que el NPC cambie de dirección repetidamente
         if (distanceFromStart >= patrolRange && !_isTurningAround)
         {
             Flip();
-            _isTurningAround = true; 
+            _isTurningAround = true;
         }
 
         if (distanceFromStart < patrolRange)
         {
-            _isTurningAround = false; 
+            _isTurningAround = false;
         }
 
         float patrolDirection = _facingRight ? 1 : -1;
         _rigidbody.velocity = new Vector2(patrolDirection * patrolSpeed, _rigidbody.velocity.y);
 
-        
         _animator.SetBool("Run", true);
     }
 
@@ -130,7 +128,7 @@ public class Interaction : MonoBehaviour
         {
             isPlayerNearby = false;
             interactSymbol.gameObject.SetActive(false);
-            messageText.text = "";
+            dialogPanel.SetActive(false);
             isDisplayingMessage = false;
             StopAllCoroutines();
 
@@ -142,34 +140,59 @@ public class Interaction : MonoBehaviour
         }
     }
 
-    private IEnumerator DisplayMessage()
+    private void StartDialogue()
     {
         isDisplayingMessage = true;
-        messageText.text = "";
+        dialogPanel.SetActive(true);
+        currentMessageIndex = 0;
 
         if (playerController != null)
-            playerController.enabled = false;
+            playerController.enabled = false; // Desactivar controles del jugador
 
-        _animator.SetBool("Run", false);
+        StartCoroutine(TypeMessage(messages[currentMessageIndex]));
+    }
+
+    private IEnumerator TypeMessage(string message)
+    {
+        dialogText.text = "";
 
         foreach (char letter in message.ToCharArray())
         {
-            messageText.text += letter;
-            yield return new WaitForSeconds(typingSpeed);
-            if (Input.GetKeyDown(interactKey))
+            dialogText.text += letter;
+            yield return new WaitForSecondsRealtime(typingSpeed);
+        }
+    }
+
+    private void SkipTypingOrContinue()
+    {
+        StopAllCoroutines();
+
+        if (dialogText.text != messages[currentMessageIndex])
+        {
+            dialogText.text = messages[currentMessageIndex];
+        }
+        else
+        {
+            currentMessageIndex++;
+
+            if (currentMessageIndex < messages.Length)
             {
-                messageText.text = message;
+                StartCoroutine(TypeMessage(messages[currentMessageIndex]));
+            }
+            else
+            {
+                EndDialogue();
             }
         }
+    }
+
+    private void EndDialogue()
+    {
+        isDisplayingMessage = false;
+        dialogPanel.SetActive(false);
 
         if (playerController != null)
-            playerController.enabled = true;
-
-        isDisplayingMessage = false;
-        if (missionName == "si")
-        {
-            FindObjectOfType<MissionManager>().StartMission();
-        }
+            playerController.enabled = true; // Reactivar controles del jugador
     }
 
     private void FacePlayer()
@@ -178,15 +201,15 @@ public class Interaction : MonoBehaviour
 
         if ((_facingRight && direction.x < 0) || (!_facingRight && direction.x > 0))
         {
-            Flip(); // Cambiar la dirección del NPC solo si es necesario
+            Flip();
         }
     }
 
     private void Flip()
     {
-        _facingRight = !_facingRight;  // Cambiar el estado de la dirección
+        _facingRight = !_facingRight;
         Vector3 localScale = transform.localScale;
-        localScale.x *= -1; 
+        localScale.x *= -1;
         transform.localScale = localScale;
     }
 
