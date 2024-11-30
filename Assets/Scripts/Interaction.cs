@@ -7,15 +7,15 @@ using UnityEngine.UI;
 
 public class Interaction : MonoBehaviour
 {
-    public string[] messages; // Lista de mensajes para los diálogos
+    public string[] messages; 
     public float typingSpeed = 0.05f;
     public KeyCode interactKey = KeyCode.E;
     public float detectionRange = 3f;
     public float patrolSpeed = 2f;
     public float patrolRange = 5f;
 
-    [SerializeField] private GameObject dialogPanel; // Panel de diálogo
-    [SerializeField] private TMP_Text dialogText;    // Texto del panel de diálogo
+    [SerializeField] private GameObject dialogPanel; 
+    [SerializeField] private TMP_Text dialogText; 
 
     private TextMeshProUGUI interactSymbol;
     private bool isPlayerNearby = false;
@@ -28,11 +28,11 @@ public class Interaction : MonoBehaviour
     private bool _facingRight = true;
     private bool _isPatrolling = true;
     private bool _isTurningAround = false;
-    private int currentMessageIndex = 0; // Índice del mensaje actual
+    private int currentMessageIndex = 0;
 
     public bool startsMission = false;
-    public string missionId; // Identificador opcional para la misión (por si hay más de una)
-    private MissionManager missionManager; // Referencia al MissionManager
+    public string missionId;
+    private MissionManager missionManager; 
 
     private void Start()
     {

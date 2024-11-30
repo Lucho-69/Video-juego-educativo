@@ -18,15 +18,44 @@ public class ProfileList : MonoBehaviour
 
             uibox.loadBtn.onClick.AddListener(() =>
             {
-                Debug.Log("Load");
-                ProfileStorage.loadProfile(profileName);
-                SceneManager.LoadScene("LoadingScene");
+                Debug.Log($"Cargando perfil: {profileName}");
+                ProfileStorage.LoadProfile(profileName);
+
+                // Aquí asignamos el nombre del perfil seleccionado a GameData
+                if (GameData.Instance != null)
+                {
+                    GameData.Instance.playerName = profileName;
+                    Debug.Log($"Nombre del perfil cargado en GameData: {GameData.Instance.playerName}");
+                }
+                else
+                {
+                    Debug.LogError("GameData no está inicializado.");
+                }
+                if (ProfileStorage.s_currentProfile != null)
+                {
+                    int currentLevel = ProfileStorage.s_currentProfile.currentLevel;
+                    string levelSceneName = "Level" + currentLevel;
+
+                    if (Application.CanStreamedLevelBeLoaded(levelSceneName))
+                    {
+                        Debug.Log($"Cargando escena: {levelSceneName}");
+                        SceneManager.LoadScene(levelSceneName);
+                    }
+                    else
+                    {
+                        Debug.LogError($"La escena {levelSceneName} no existe.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("El perfil no pudo ser cargado.");
+                }
             });
 
             uibox.deleteBtn.onClick.AddListener(() =>
             {
                 ProfileStorage.DeleteProfile(profileName);
-                Debug.Log("Destroy");
+                Debug.Log($"Perfil eliminado: {profileName}");
                 Destroy(go);
             });
 

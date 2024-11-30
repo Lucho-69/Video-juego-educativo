@@ -8,13 +8,13 @@ public class IntroController : MonoBehaviour
     public TextMeshProUGUI welcomeText;
     private List<string> storyParts;
     private int storyIndex = 0;
+    public GameObject panel;
 
     private void Start()
     {
-        // Obtener el nombre del jugador desde PlayerPrefs
         string playerName = PlayerPrefs.GetString("PlayerName", "Jugador");
+        panel.SetActive(true);
 
-        // Configurar las partes de la historia
         storyParts = new List<string>
         {
             $"Bienvenido, {playerName}. Te encuentras en un momento crucial de nuestra historia. En estas tierras de coraje y resistencia, las Heroínas de la Coronilla defendieron con valentía lo que más amaban. Eran madres, hijas y amigas, unidas por un propósito inquebrantable.",
@@ -24,7 +24,7 @@ public class IntroController : MonoBehaviour
             $"Ahora, {playerName}, prepárate para enfrentar los desafíos que estos tiempos te presentarán. Con cada nivel, descubrirás más sobre sus luchas y sus sacrificios. Avanza y demuestra que su espíritu vive en ti."
         };
 
-        // Mostrar la primera parte de la historia
+        
         ShowStoryPart();
     }
 

@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Xml.Serialization;
 
 [System.Serializable]
 public class Question
@@ -36,9 +38,19 @@ public class QuizManager : MonoBehaviour
 
     private void Start()
     {
+        if (GameData.Instance == null)
+        {
+            Debug.LogError("GameData instance no está inicializado.");
+            return;
+        }
+
+        playerName = GameData.Instance.playerName;
+
+        Debug.Log("El nombre del jugador es: " + playerName);
+        Debug.Log($"Nombre del jugador cargado: {playerName}");
         quizPanel.SetActive(false);
         Debug.Log("Panel ocultado en Start");
-        
+
         allQuestions = new List<Question>
         {
             new Question { questionText = "¿Quiénes fueron las Heroínas de la Coronilla?", answers = new string[] { "Un grupo de mujeres revolucionarias", "Un ejército español", "Un grupo de mercaderes", "Soldados de la independencia" }, correctAnswerIndex = 0 },
@@ -62,8 +74,6 @@ public class QuizManager : MonoBehaviour
             new Question { questionText = "¿Quién lideraba el ejército español en la batalla de la Coronilla?", answers = new string[] { "Pedro Antonio Olañeta", "Sebastián de Segurola", "Goyeneche", "José de San Martín" }, correctAnswerIndex = 0 }
 
         };
-
-        playerName = PlayerPrefs.GetString("PlayerName", "Jugador");
     }
     public void StartQuiz()
     {
@@ -142,7 +152,7 @@ public class QuizManager : MonoBehaviour
         if (timerCoroutine != null)
         {
             StopCoroutine(timerCoroutine);
-            timerCoroutine = null; 
+            timerCoroutine = null;
         }
         Question currentQuestion = selectedQuestions[currentQuestionIndex];
 
@@ -152,7 +162,7 @@ public class QuizManager : MonoBehaviour
             resultText.color = Color.green;
             score++;
             int questionId = allQuestions.IndexOf(currentQuestion);
-            answeredCorrectly.Add(questionId); 
+            answeredCorrectly.Add(questionId);
         }
         else
         {
@@ -160,15 +170,18 @@ public class QuizManager : MonoBehaviour
             resultText.color = Color.red;
         }
 
+        // Imprimir en consola el nombre del usuario y puntaje acumulado
+        PrintPlayerScore();
+
         currentQuestionIndex++;
 
         if (currentQuestionIndex < selectedQuestions.Count)
         {
-            Invoke("ShowQuestion", 1f); 
+            Invoke("ShowQuestion", 1f);
         }
         else
         {
-            Invoke("EndQuiz", 1f); 
+            Invoke("EndQuiz", 1f);
         }
     }
 
@@ -182,8 +195,49 @@ public class QuizManager : MonoBehaviour
 
     private void SavePlayerScore()
     {
-        PlayerPrefs.SetInt($"{playerName}_Score", score);
-        PlayerPrefs.Save();
+
+        // Crear la carpeta de perfiles si no existe
+        string profilesFolder = Path.Combine(Application.persistentDataPath, "Profiles");
+        if (!Directory.Exists(profilesFolder))
+        {
+            Directory.CreateDirectory(profilesFolder);
+        }
+
+        // Crear la ruta para guardar el archivo XML
+        string filePath = Path.Combine(profilesFolder, playerName.Replace(" ", "_"));
+
+        ProfileData playerData;
+
+        // Verificar si el archivo XML ya existe
+        if (File.Exists(filePath))
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(ProfileData));
+            using (FileStream stream = new FileStream(filePath, FileMode.Open))
+            {
+                playerData = (ProfileData)serializer.Deserialize(stream);
+            }
+        }
+        else
+        {
+            // Si no existe el archivo, crea un nuevo ProfileData
+            playerData = new ProfileData(playerName, false, 1, 0);
+        }
+
+        // Actualizar el puntaje
+        playerData.score += score;
+
+        // Guardar el archivo XML
+        XmlSerializer xmlSerializer = new XmlSerializer(typeof(ProfileData));
+        using (FileStream stream = new FileStream(filePath, FileMode.Create))
+        {
+            xmlSerializer.Serialize(stream, playerData);
+        }
+
+        Debug.Log($"Datos guardados en XML. Jugador: {playerName}, Puntaje Total: {playerData.score}");
+    }
+    private void PrintPlayerScore()
+    {
+        Debug.Log($"Jugador: {playerName}, Puntaje Actual: {score}");
     }
 }
 

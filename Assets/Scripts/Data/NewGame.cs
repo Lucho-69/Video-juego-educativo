@@ -12,6 +12,17 @@ public class NewGame : MonoBehaviour
     {
         string profileName = this.profileInput.text;
         ProfileStorage.CreateNewGame(profileName);
+
+        if (GameData.Instance != null)
+        {
+            GameData.Instance.playerName = profileName;
+        }
+        else
+        {
+            Debug.LogError("GameData.Instance no está inicializado.");
+            return;
+        }
+
         SceneManager.LoadScene("NewGameCinematic");
     }
 }

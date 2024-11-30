@@ -3,34 +3,37 @@ using System.Xml.Serialization;
 [XmlRoot("ProfileData")]
 public class ProfileData 
 {
-    [XmlElement("fileName")] // Mapea el campo 'fileName' con el elemento 'fileName' del XML
+    [XmlElement("fileName")]
     public string fileName { get; set; }
 
-    [XmlElement("name")] // Mapea el campo 'name' con el elemento 'name' del XML
+    [XmlElement("name")]
     public string name { get; set; }
 
-    [XmlElement("newGame")] // Mapea el campo 'newGame' con el elemento 'newGame' del XML
+    [XmlElement("newGame")]
     public bool newGame { get; set; }
 
-    [XmlElement("x")] // Mapea el campo 'x' con el elemento 'x' del XML
-    public float x { get; set; }
+    [XmlElement("currentLevel")]
+    public int currentLevel { get; set; }
 
-    [XmlElement("y")] // Mapea el campo 'y' con el elemento 'y' del XML
-    public float y { get; set; }
+    [XmlElement("score")]
+    public int score { get; set; }
 
-    public ProfileData() {
-        this.fileName = "None.xml";
-        this.name = "None.xml";
+    public ProfileData()
+    {
+        this.fileName = "None";
+        this.name = "None";
         this.newGame = false;
-        this.x = this.y = 0;
+        this.currentLevel = 1;
+        this.score = 0;
     }
 
-    public ProfileData (string name, bool newGame, float x, float y)
+    // Constructor parametrizado
+    public ProfileData(string name, bool newGame, int currentLevel, int score)
     {
-        this.fileName = name.Replace(" ", "_") + ".xml"; // Corregido el reemplazo
+        this.fileName = name.Replace(" ", "_");
         this.name = name;
         this.newGame = newGame;
-        this.x = x;
-        this.y = y;
+        this.currentLevel = currentLevel;
+        this.score = score;
     }
 }

@@ -6,45 +6,45 @@ using UnityEngine.SceneManagement;
 
 public class Prueba : MonoBehaviour
 {
-    public GameObject dialogPanel; // Panel de diálogo
-    public TextMeshProUGUI messageText; // Texto del mensaje
-    public TextMeshProUGUI interactSymbol; // Símbolo de interacción
-    public string[] messages; // Lista de mensajes para los diálogos
-    public string sceneToLoad; // Escena a cargar (opcional)
-    public KeyCode interactKey = KeyCode.E; // Tecla de interacción
-    public float typingSpeed = 0.05f; // Velocidad de escritura
+    public GameObject dialogPanel; 
+    public TextMeshProUGUI messageText; 
+    public TextMeshProUGUI interactSymbol; 
+    public string[] messages;
+    public string sceneToLoad;
+    public KeyCode interactKey = KeyCode.E;
+    public float typingSpeed = 0.05f; 
 
-    private bool isPlayerNearby = false; // ¿El jugador está cerca?
-    private bool isDisplayingMessage = false; // ¿Se está mostrando un mensaje?
-    private int currentMessageIndex = 0; // Índice del mensaje actual
+    private bool isPlayerNearby = false;
+    private bool isDisplayingMessage = false; 
+    private int currentMessageIndex = 0; 
 
     private void Start()
     {
-        dialogPanel.SetActive(false); // Ocultar el panel al inicio
-        interactSymbol.gameObject.SetActive(false); // Ocultar símbolo de interacción
+        dialogPanel.SetActive(false); 
+        interactSymbol.gameObject.SetActive(false); 
     }
 
     private void Update()
     {
         if (isPlayerNearby)
         {
-            interactSymbol.gameObject.SetActive(true); // Mostrar símbolo de interacción
+            interactSymbol.gameObject.SetActive(true); 
 
             if (Input.GetKeyDown(interactKey))
             {
                 if (!isDisplayingMessage)
                 {
-                    StartDialogue(); // Iniciar diálogo
+                    StartDialogue();
                 }
                 else
                 {
-                    SkipTypingOrContinue(); // Saltar texto o avanzar al siguiente
+                    SkipTypingOrContinue();
                 }
             }
         }
         else
         {
-            interactSymbol.gameObject.SetActive(false); // Ocultar símbolo si el jugador no está cerca
+            interactSymbol.gameObject.SetActive(false); 
         }
     }
 
@@ -61,21 +61,21 @@ public class Prueba : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             isPlayerNearby = false;
-            dialogPanel.SetActive(false); // Ocultar el panel de diálogo
-            interactSymbol.gameObject.SetActive(false); // Ocultar el símbolo de interacción
-            StopAllCoroutines(); // Detener cualquier texto en escritura
-            messageText.text = ""; // Limpiar el texto
-            isDisplayingMessage = false; // Resetear estado del diálogo
-            currentMessageIndex = 0; // Reiniciar índice del mensaje
+            dialogPanel.SetActive(false); 
+            interactSymbol.gameObject.SetActive(false); 
+            StopAllCoroutines(); 
+            messageText.text = ""; 
+            isDisplayingMessage = false; 
+            currentMessageIndex = 0; 
         }
     }
 
     private void StartDialogue()
     {
-        isDisplayingMessage = true; // Indicar que se está mostrando un mensaje
-        dialogPanel.SetActive(true); // Mostrar el panel de diálogo
-        currentMessageIndex = 0; // Reiniciar el índice de mensajes
-        StartCoroutine(TypeMessage(messages[currentMessageIndex])); // Iniciar escritura del primer mensaje
+        isDisplayingMessage = true;
+        dialogPanel.SetActive(true);
+        currentMessageIndex = 0;
+        StartCoroutine(TypeMessage(messages[currentMessageIndex]));
     }
 
     private IEnumerator TypeMessage(string message)
@@ -84,23 +84,21 @@ public class Prueba : MonoBehaviour
 
         foreach (char letter in message.ToCharArray())
         {
-            messageText.text += letter; // Escribir letra por letra
-            yield return new WaitForSeconds(typingSpeed); // Esperar según la velocidad configurada
+            messageText.text += letter;
+            yield return new WaitForSeconds(typingSpeed);
         }
     }
 
     private void SkipTypingOrContinue()
     {
-        StopAllCoroutines(); // Detener la escritura en curso
+        StopAllCoroutines(); 
 
         if (messageText.text != messages[currentMessageIndex])
         {
-            // Mostrar todo el mensaje actual si el jugador interrumpe la escritura
             messageText.text = messages[currentMessageIndex];
         }
         else
         {
-            // Avanzar al siguiente mensaje
             currentMessageIndex++;
 
             if (currentMessageIndex < messages.Length)
@@ -109,19 +107,18 @@ public class Prueba : MonoBehaviour
             }
             else
             {
-                EndDialogue(); // Finalizar diálogo si no hay más mensajes
+                EndDialogue(); 
             }
         }
     }
 
     private void EndDialogue()
     {
-        isDisplayingMessage = false; // Indicar que terminó el diálogo
-        dialogPanel.SetActive(false); // Ocultar el panel de diálogo
+        isDisplayingMessage = false;
+        dialogPanel.SetActive(false);
 
         if (!string.IsNullOrEmpty(sceneToLoad))
         {
-            // Cargar escena si está configurada
             SceneManager.LoadScene(sceneToLoad);
         }
     }

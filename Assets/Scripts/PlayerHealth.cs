@@ -58,8 +58,8 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator ShowMissionFailedCanvas()
     {
-        yield return new WaitForSeconds(2f); // Espera que la animación termine
-        missionFailedCanvas.SetActive(true); // Mostrar el Canvas
+        yield return new WaitForSeconds(2f); 
+        missionFailedCanvas.SetActive(true); 
     }
 
     private IEnumerator VisualFeedback()

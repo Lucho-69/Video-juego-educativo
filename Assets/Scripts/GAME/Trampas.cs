@@ -24,12 +24,13 @@ public class Trampas : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
-
+        if (collision.gameObject.CompareTag("Player"))
         {
-            collision.SendMessageUpwards("AddDamage", damage);
-            Debug.Log("Encontre al Player");
-            // Tell player to get hurt
+            PlayerHealth playerHealth = collision.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
+            }
         }
     }
 }
