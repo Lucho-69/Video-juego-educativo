@@ -160,7 +160,7 @@ public class QuizManager : MonoBehaviour
         {
             resultText.text = "¡Correcto!";
             resultText.color = Color.green;
-            score++;
+            score=score+5;
             int questionId = allQuestions.IndexOf(currentQuestion);
             answeredCorrectly.Add(questionId);
         }
@@ -170,7 +170,6 @@ public class QuizManager : MonoBehaviour
             resultText.color = Color.red;
         }
 
-        // Imprimir en consola el nombre del usuario y puntaje acumulado
         PrintPlayerScore();
 
         currentQuestionIndex++;
@@ -195,19 +194,16 @@ public class QuizManager : MonoBehaviour
 
     private void SavePlayerScore()
     {
-        // Crear la carpeta de perfiles si no existe
         string profilesFolder = Path.Combine(Application.persistentDataPath, "Profiles");
         if (!Directory.Exists(profilesFolder))
         {
             Directory.CreateDirectory(profilesFolder);
         }
 
-        // Crear la ruta para guardar el archivo XML
         string filePath = Path.Combine(profilesFolder, playerName.Replace(" ", "_"));
 
         ProfileData playerData;
 
-        // Verificar si el archivo XML ya existe
         if (File.Exists(filePath))
         {
             XmlSerializer serializer = new XmlSerializer(typeof(ProfileData));
@@ -221,11 +217,10 @@ public class QuizManager : MonoBehaviour
             playerData = new ProfileData(playerName, false, 1, 0);
         }
 
-        // Actualizar puntaje y nivel
         playerData.score += score;
-        playerData.currentLevel += 1; // Incrementar el nivel
+        playerData.currentLevel += 1;
 
-        // Guardar los datos actualizados en el archivo XML
+        
         XmlSerializer xmlSerializer = new XmlSerializer(typeof(ProfileData));
         using (FileStream stream = new FileStream(filePath, FileMode.Create))
         {
@@ -233,6 +228,28 @@ public class QuizManager : MonoBehaviour
         }
 
         Debug.Log($"Datos guardados en XML. Jugador: {playerName}, Nivel Actual: {playerData.currentLevel}, Puntaje Total: {playerData.score}");
+    }
+    private void LoadNextLevel()
+    {
+        
+        string profilesFolder = Path.Combine(Application.persistentDataPath, "Profiles");
+        string filePath = Path.Combine(profilesFolder, playerName.Replace(" ", "_"));
+
+        if (File.Exists(filePath))
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(ProfileData));
+            using (FileStream stream = new FileStream(filePath, FileMode.Open))
+            {
+                ProfileData playerData = (ProfileData)serializer.Deserialize(stream);
+                string nextLevelSceneName = $"Level{playerData.currentLevel}";
+                Debug.Log($"Cargando escena: {nextLevelSceneName}");
+                UnityEngine.SceneManagement.SceneManager.LoadScene(nextLevelSceneName);
+            }
+        }
+        else
+        {
+            Debug.LogError("No se encontró el archivo de datos del jugador.");
+        }
     }
     private void PrintPlayerScore()
     {

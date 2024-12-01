@@ -24,10 +24,20 @@ public static class ProfileStorage
     }
 
     // Método para cargar un perfil existente
-    public static void LoadProfile(string fileName)
+    // Método para cargar un perfil existente y devolverlo
+    public static ProfileData LoadProfile(string fileName)
     {
         string path = Application.persistentDataPath + "/Profiles/" + fileName;
-        s_currentProfile = LoadFile<ProfileData>(path);
+        if (File.Exists(path))
+        {
+            s_currentProfile = LoadFile<ProfileData>(path); // Asignamos el perfil cargado a s_currentProfile
+            return s_currentProfile; // Retornamos el perfil cargado
+        }
+        else
+        {
+            Debug.LogWarning($"Perfil no encontrado: {fileName}");
+            return null; // Si no se encuentra el perfil, retornamos null
+        }
     }
 
     // Método para guardar el progreso del jugador
@@ -124,5 +134,13 @@ public static class ProfileStorage
         {
             Directory.CreateDirectory(directory);
         }
+    }
+    
+
+    // Método para obtener el puntaje de un perfil por su nombre
+    public static int GetProfileScore(string profileName)
+    {
+        var profile = LoadProfile(profileName); // Ahora esto devuelve el perfil cargado
+        return profile?.score ?? 0; // Devuelve 0 si el perfil es nulo
     }
 }
