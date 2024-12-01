@@ -195,7 +195,6 @@ public class QuizManager : MonoBehaviour
 
     private void SavePlayerScore()
     {
-
         // Crear la carpeta de perfiles si no existe
         string profilesFolder = Path.Combine(Application.persistentDataPath, "Profiles");
         if (!Directory.Exists(profilesFolder))
@@ -219,21 +218,21 @@ public class QuizManager : MonoBehaviour
         }
         else
         {
-            // Si no existe el archivo, crea un nuevo ProfileData
             playerData = new ProfileData(playerName, false, 1, 0);
         }
 
-        // Actualizar el puntaje
+        // Actualizar puntaje y nivel
         playerData.score += score;
+        playerData.currentLevel += 1; // Incrementar el nivel
 
-        // Guardar el archivo XML
+        // Guardar los datos actualizados en el archivo XML
         XmlSerializer xmlSerializer = new XmlSerializer(typeof(ProfileData));
         using (FileStream stream = new FileStream(filePath, FileMode.Create))
         {
             xmlSerializer.Serialize(stream, playerData);
         }
 
-        Debug.Log($"Datos guardados en XML. Jugador: {playerName}, Puntaje Total: {playerData.score}");
+        Debug.Log($"Datos guardados en XML. Jugador: {playerName}, Nivel Actual: {playerData.currentLevel}, Puntaje Total: {playerData.score}");
     }
     private void PrintPlayerScore()
     {

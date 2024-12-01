@@ -35,7 +35,7 @@ public static class ProfileStorage
     {
         s_currentProfile.currentLevel = currentLevel;
         s_currentProfile.score = score;
-        s_currentProfile.newGame = false; // Ya no es una partida nueva
+        s_currentProfile.newGame = false;
 
         string path = Application.persistentDataPath + "/Profiles/" + s_currentProfile.fileName;
         SaveFile(path, s_currentProfile);

@@ -6,7 +6,7 @@ public class GameData : MonoBehaviour
 {
     public static GameData Instance { get; private set; }
 
-    public string playerName;  // Aquí defines la propiedad 'playerName'
+    public string playerName;
 
     private void Awake()
     {
