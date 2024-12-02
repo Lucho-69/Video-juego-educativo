@@ -6,29 +6,33 @@ using UnityEngine.SceneManagement;
 
 public class Prueba : MonoBehaviour
 {
-    public GameObject dialogPanel; 
-    public TextMeshProUGUI messageText; 
-    public TextMeshProUGUI interactSymbol; 
+    public GameObject dialogPanel;
+    public TextMeshProUGUI messageText;
+    public TextMeshProUGUI interactSymbol;
     public string[] messages;
     public string sceneToLoad;
     public KeyCode interactKey = KeyCode.E;
-    public float typingSpeed = 0.05f; 
+    public float typingSpeed = 0.05f;
 
     private bool isPlayerNearby = false;
-    private bool isDisplayingMessage = false; 
-    private int currentMessageIndex = 0; 
+    private bool isDisplayingMessage = false;
+    private int currentMessageIndex = 0;
+    private PlayerController playerController;
+    private MissionManager missionManager;
 
     private void Start()
     {
-        dialogPanel.SetActive(false); 
-        interactSymbol.gameObject.SetActive(false); 
+        dialogPanel.SetActive(false);
+        interactSymbol.gameObject.SetActive(false);
+        playerController = FindObjectOfType<PlayerController>();  // Obtener la referencia al PlayerController
+        missionManager = FindObjectOfType<MissionManager>();  // Obtener la referencia al MissionManager
     }
 
     private void Update()
     {
         if (isPlayerNearby)
         {
-            interactSymbol.gameObject.SetActive(true); 
+            interactSymbol.gameObject.SetActive(true);
 
             if (Input.GetKeyDown(interactKey))
             {
@@ -44,7 +48,7 @@ public class Prueba : MonoBehaviour
         }
         else
         {
-            interactSymbol.gameObject.SetActive(false); 
+            interactSymbol.gameObject.SetActive(false);
         }
     }
 
@@ -61,26 +65,44 @@ public class Prueba : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             isPlayerNearby = false;
-            dialogPanel.SetActive(false); 
-            interactSymbol.gameObject.SetActive(false); 
-            StopAllCoroutines(); 
-            messageText.text = ""; 
-            isDisplayingMessage = false; 
-            currentMessageIndex = 0; 
+            dialogPanel.SetActive(false);
+            interactSymbol.gameObject.SetActive(false);
+            StopAllCoroutines();
+            messageText.text = "";
+            isDisplayingMessage = false;
+            currentMessageIndex = 0;
         }
     }
 
     private void StartDialogue()
     {
+        // Bloquear el movimiento del jugador al iniciar el diálogo
+        if (playerController != null)
+        {
+            playerController.enabled = false;  // Desactivar el script del jugador para bloquear el movimiento
+        }
+
         isDisplayingMessage = true;
         dialogPanel.SetActive(true);
         currentMessageIndex = 0;
         StartCoroutine(TypeMessage(messages[currentMessageIndex]));
+
+        // Detener el temporizador de la misión cuando se inicie el diálogo
+        if (missionManager != null)
+        {
+            missionManager.StopMissionTimer();  // Detener el temporizador de la misión
+        }
+
+        // Marcar la misión como completada cuando inicie el diálogo
+        if (missionManager != null)
+        {
+            missionManager.CompleteMission();  // Marcar la misión como completada
+        }
     }
 
     private IEnumerator TypeMessage(string message)
     {
-        messageText.text = ""; // Limpiar el texto antes de empezar
+        messageText.text = "";
 
         foreach (char letter in message.ToCharArray())
         {
@@ -91,7 +113,7 @@ public class Prueba : MonoBehaviour
 
     private void SkipTypingOrContinue()
     {
-        StopAllCoroutines(); 
+        StopAllCoroutines();
 
         if (messageText.text != messages[currentMessageIndex])
         {
@@ -107,13 +129,19 @@ public class Prueba : MonoBehaviour
             }
             else
             {
-                EndDialogue(); 
+                EndDialogue();
             }
         }
     }
 
     private void EndDialogue()
     {
+        // Reactivar el movimiento del jugador después de terminar el diálogo
+        if (playerController != null)
+        {
+            playerController.enabled = true;  // Reactivar el script del jugador para permitir el movimiento
+        }
+
         isDisplayingMessage = false;
         dialogPanel.SetActive(false);
 

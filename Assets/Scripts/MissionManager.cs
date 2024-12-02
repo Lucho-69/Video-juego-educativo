@@ -6,13 +6,10 @@ using UnityEngine;
 public class MissionManager : MonoBehaviour
 {
     private GameManager gameManager;
-    public Transform targetNPC;
-    public Transform cameraTarget;
-    public GameObject interactSymbol;
-    public GameObject missionPanel; // Referencia al panel de misión
+    public GameObject missionPanel;
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI missionDescription;
-    public float cameraMoveSpeed = 2f;
+    public GameObject missionFailedCanvas;
     public float missionTime = 30f;
 
     private bool missionStarted = false;
@@ -22,14 +19,12 @@ public class MissionManager : MonoBehaviour
     private void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
+        missionFailedCanvas.SetActive(false);  // Asegúrate de que el canvas de misión fallida esté inactivo al inicio
 
-        // Desactivamos la UI al inicio
-        missionPanel.SetActive(false); // Asegúrate de que el MissionPanel esté desactivado al principio
+        missionPanel.SetActive(false);
         missionDescription.gameObject.SetActive(false);
         timerText.gameObject.SetActive(false);
-        interactSymbol.SetActive(false);
     }
-
 
     public void StartMission()
     {
@@ -39,39 +34,17 @@ public class MissionManager : MonoBehaviour
             timeRemaining = missionTime;
             timerRunning = true;
 
-            // Activamos el MissionPanel al iniciar la misión
-            missionPanel.SetActive(true); // Hacemos visible el panel de misión
-
-            missionDescription.text = "Mission: Avisa a las Heroinas antes de que acabe el tiempo";
-            missionDescription.gameObject.SetActive(true); // Aseguramos que la descripción de la misión se vea
-            timerText.gameObject.SetActive(true); // Aseguramos que el temporizador sea visible
+            missionPanel.SetActive(true);
+            missionDescription.text = "Mission: Avisa a las Heroínas antes de que acabe el tiempo";
+            missionDescription.gameObject.SetActive(true);
+            timerText.gameObject.SetActive(true);
 
             UpdateTimerUI();
-
-            // Mover la cámara hacia el objetivo de la misión
-            StartCoroutine(MoveCameraToTarget());
         }
-    }
-
-    private IEnumerator MoveCameraToTarget()
-    {
-        Camera mainCamera = Camera.main;
-        Vector3 targetPosition = cameraTarget.position;
-        targetPosition.z = mainCamera.transform.position.z;
-
-        while (Vector3.Distance(mainCamera.transform.position, targetPosition) > 0.1f)
-        {
-            mainCamera.transform.position = Vector3.MoveTowards(mainCamera.transform.position, targetPosition, cameraMoveSpeed * Time.deltaTime);
-            yield return null;
-        }
-
-        // Una vez que la cámara se mueve al objetivo, mostramos el símbolo de interacción
-        interactSymbol.SetActive(true);
     }
 
     private void Update()
     {
-
         if (timerRunning)
         {
             if (timeRemaining > 0)
@@ -82,7 +55,7 @@ public class MissionManager : MonoBehaviour
             else
             {
                 timerRunning = false;
-                gameManager.TriggerMissionFailed();
+                ShowMissionFailed();  // Mostrar mensaje de misión fallida
             }
         }
     }
@@ -96,32 +69,38 @@ public class MissionManager : MonoBehaviour
     {
         if (collision.CompareTag("Player") && missionStarted)
         {
-            // Si el jugador completa la misión, detener el temporizador
             timerRunning = false;
-            interactSymbol.SetActive(false);
+            missionDescription.text = "¡Misión Completada!";
 
-            // Cambiar el texto a "Misión Completada!"
-            timerText.text = "¡Misión Completada!";
-            missionDescription.text = "";
-
-
-            StartCoroutine(HideMissionUI());
-
-
+            StartCoroutine(HideMissionUIAfterDelay());
         }
     }
 
-    private IEnumerator HideMissionUI()
+    private void ShowMissionFailed()
     {
-        // Esperar 2 segundos antes de ocultar la UI
-        yield return new WaitForSeconds(2f);
-
-        // Desactivar el MissionPanel
-        missionPanel.SetActive(false); // Ocultamos todo el panel de la misión
-
-        // También puedes desactivar los elementos individuales si es necesario
+        missionPanel.SetActive(false);  // Ocultar la UI de la misión antes de mostrar el mensaje de fallo
         missionDescription.gameObject.SetActive(false);
         timerText.gameObject.SetActive(false);
+        missionFailedCanvas.SetActive(true);  // Mostrar el canvas de misión fallida
+    }
 
+    private IEnumerator HideMissionUIAfterDelay()
+    {
+        yield return new WaitForSeconds(5f);  // Esperar 5 segundos antes de ocultar el panel de misión
+        missionPanel.SetActive(false);
+        missionDescription.gameObject.SetActive(false);
+        timerText.gameObject.SetActive(false);
+    }
+
+    public void CompleteMission()
+    {
+        timerRunning = false;
+        missionDescription.text = "¡Misión Completada!";
+        StartCoroutine(HideMissionUIAfterDelay());
+    }
+
+    public void StopMissionTimer()  // Método para detener el temporizador desde otro script
+    {
+        timerRunning = false;
     }
 }
