@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ActivateObject : MonoBehaviour
 {
-    public GameObject objetoParaActivar; // Asigna el objeto que quieres activar en el Inspector
+    public GameObject objetoParaActivar;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -18,8 +18,8 @@ public class ActivateObject : MonoBehaviour
     {
         if (objetoParaActivar != null)
         {
-            objetoParaActivar.SetActive(true);   // Activa el objeto especificado
-            gameObject.SetActive(false);         // Desactiva el objeto actual que contiene este script
+            objetoParaActivar.SetActive(true);
+            gameObject.SetActive(false);
         }
         else
         {

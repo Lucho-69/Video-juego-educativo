@@ -36,6 +36,12 @@ public class QuizManager : MonoBehaviour
     private float timer;
     private Coroutine timerCoroutine;
 
+    // Panel al final del cuestionario
+    public GameObject endQuizPanel;
+    public TextMeshProUGUI finalScoreText;
+    public TextMeshProUGUI congratulationsText;
+    public Button nextLevelButton;
+
     private void Start()
     {
         if (GameData.Instance == null)
@@ -46,10 +52,8 @@ public class QuizManager : MonoBehaviour
 
         playerName = GameData.Instance.playerName;
 
-        Debug.Log("El nombre del jugador es: " + playerName);
-        Debug.Log($"Nombre del jugador cargado: {playerName}");
         quizPanel.SetActive(false);
-        Debug.Log("Panel ocultado en Start");
+        endQuizPanel.SetActive(false);
 
         allQuestions = new List<Question>
         {
@@ -75,6 +79,7 @@ public class QuizManager : MonoBehaviour
 
         };
     }
+
     public void StartQuiz()
     {
         score = 0;
@@ -83,16 +88,12 @@ public class QuizManager : MonoBehaviour
         timer = timeLimit;
         startQuizButton.SetActive(false);
         quizPanel.SetActive(true);
-        Debug.Log("Quiz Panel activado");
         ShowQuestion();
     }
 
     private void SelectRandomQuestions()
     {
-        
         List<Question> unaskedQuestions = allQuestions.Where((q, index) => !answeredCorrectly.Contains(index)).ToList();
-
-        
         selectedQuestions = unaskedQuestions.OrderBy(q => Random.value).Take(5).ToList();
     }
 
@@ -106,18 +107,17 @@ public class QuizManager : MonoBehaviour
 
             for (int i = 0; i < answerButtons.Length; i++)
             {
-                
                 if (i < currentQuestion.answers.Length)
                 {
                     answerButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = currentQuestion.answers[i];
-                    answerButtons[i].gameObject.SetActive(true); 
+                    answerButtons[i].gameObject.SetActive(true);
                     answerButtons[i].onClick.RemoveAllListeners();
                     int index = i;
                     answerButtons[i].onClick.AddListener(() => OnAnswerSelected(index));
                 }
                 else
                 {
-                    answerButtons[i].gameObject.SetActive(false); 
+                    answerButtons[i].gameObject.SetActive(false);
                 }
             }
             if (timerCoroutine != null)
@@ -131,6 +131,7 @@ public class QuizManager : MonoBehaviour
             Debug.LogError("No hay preguntas para mostrar en la lista seleccionada.");
         }
     }
+
     private IEnumerator TimerCoroutine()
     {
         float timer = timeLimit;
@@ -144,7 +145,18 @@ public class QuizManager : MonoBehaviour
 
         resultText.text = "Tiempo agotado.";
         resultText.color = Color.yellow;
-        EndQuiz();
+        StartCoroutine(HideResultTextAfterSeconds(3f));
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < selectedQuestions.Count)
+        {
+            ShowQuestion();
+        }
+        else
+        {
+            EndQuiz();
+        }
     }
 
     private void OnAnswerSelected(int index)
@@ -154,13 +166,14 @@ public class QuizManager : MonoBehaviour
             StopCoroutine(timerCoroutine);
             timerCoroutine = null;
         }
+
         Question currentQuestion = selectedQuestions[currentQuestionIndex];
 
         if (index == currentQuestion.correctAnswerIndex)
         {
             resultText.text = "¡Correcto!";
             resultText.color = Color.green;
-            score=score+5;
+            score += 5;
             int questionId = allQuestions.IndexOf(currentQuestion);
             answeredCorrectly.Add(questionId);
         }
@@ -170,26 +183,40 @@ public class QuizManager : MonoBehaviour
             resultText.color = Color.red;
         }
 
-        PrintPlayerScore();
+        StartCoroutine(HideResultTextAfterSeconds(3f));
 
         currentQuestionIndex++;
 
         if (currentQuestionIndex < selectedQuestions.Count)
         {
-            Invoke("ShowQuestion", 1f);
+            ShowQuestion();
         }
         else
         {
-            Invoke("EndQuiz", 1f);
+            EndQuiz();
         }
+    }
+
+    private IEnumerator HideResultTextAfterSeconds(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        resultText.text = "";
+        resultText.color = Color.clear;
     }
 
     private void EndQuiz()
     {
         quizPanel.SetActive(false);
         SavePlayerScore();
-        Debug.Log("Puntaje Final: " + score);
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Level2");
+
+        endQuizPanel.SetActive(true);
+        congratulationsText.text = $"¡Felicidades, {playerName}! Obtuviste un puntaje de {score}.";
+        finalScoreText.text = "¿Listo para el siguiente nivel?";
+
+        Debug.Log($"Jugador: {playerName}, Puntaje final: {score}");
+
+        nextLevelButton.onClick.RemoveAllListeners();
+        nextLevelButton.onClick.AddListener(LoadNextLevel);
     }
 
     private void SavePlayerScore()
@@ -220,18 +247,15 @@ public class QuizManager : MonoBehaviour
         playerData.score += score;
         playerData.currentLevel += 1;
 
-        
         XmlSerializer xmlSerializer = new XmlSerializer(typeof(ProfileData));
         using (FileStream stream = new FileStream(filePath, FileMode.Create))
         {
             xmlSerializer.Serialize(stream, playerData);
         }
-
-        Debug.Log($"Datos guardados en XML. Jugador: {playerName}, Nivel Actual: {playerData.currentLevel}, Puntaje Total: {playerData.score}");
     }
+
     private void LoadNextLevel()
     {
-        
         string profilesFolder = Path.Combine(Application.persistentDataPath, "Profiles");
         string filePath = Path.Combine(profilesFolder, playerName.Replace(" ", "_"));
 
@@ -242,18 +266,8 @@ public class QuizManager : MonoBehaviour
             {
                 ProfileData playerData = (ProfileData)serializer.Deserialize(stream);
                 string nextLevelSceneName = $"Level{playerData.currentLevel}";
-                Debug.Log($"Cargando escena: {nextLevelSceneName}");
                 UnityEngine.SceneManagement.SceneManager.LoadScene(nextLevelSceneName);
             }
         }
-        else
-        {
-            Debug.LogError("No se encontró el archivo de datos del jugador.");
-        }
-    }
-    private void PrintPlayerScore()
-    {
-        Debug.Log($"Jugador: {playerName}, Puntaje Actual: {score}");
     }
 }
-
