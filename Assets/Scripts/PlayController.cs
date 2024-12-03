@@ -11,16 +11,16 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     public float groundCheckRadius;
 
-    // References
+    
     private Rigidbody2D _rigidbody;
     private Animator _animator;
 
-    // Movement
+    
     private Vector2 _movement;
     private bool _facingRight = true;
     private bool _isGround;
 
-    // Attack
+    
     private bool _isAttack;
 
 
